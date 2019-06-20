@@ -1,0 +1,29 @@
+{
+  "name": "message-broadcast",
+  "version": "1.0.0",
+  "description": "Simple message broadcaster using AWS WebSocket API",
+  "main": "src/handler.ts",
+  "scripts": {
+    "status": "sls info",
+    "build": "sls package",
+    "deploy": "sls deploy"
+  },
+  "dependencies": {
+    "source-map-support": "^0.5.10"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.17",
+    "@types/node": "^10.12.18",
+    "aws-sdk": "^2.290.0",
+    "serverless": "^1.41.1",
+    "serverless-webpack": "^5.2.0",
+    "ts-loader": "^5.4.4",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.4.5",
+    "webpack": "^4.30.0",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "author": "lactrious@gmail.com",
+  "license": "MIT"
+}

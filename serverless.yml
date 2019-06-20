@@ -1,0 +1,74 @@
+service:
+  name: ${env:SERVICE_NAME}
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: ap-northeast-2
+  stage: ${self:custom.stage}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "execute-api:ManageConnections"
+      Resource:
+        - "arn:aws:execute-api:*:*:**/@connections/*"
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+        - "dynamodb:DeleteItem"
+        - "dynamodb:Scan"
+      Resource:
+        - Fn::GetAtt: [ConnectionTable, Arn]
+  environment:
+    CONNECTION_TABLE_NAME: ${self:custom.connectionTableName}
+    API_PATH: ${env:API_PATH}
+
+plugins:
+  - serverless-webpack
+
+custom:
+  webpack:
+    includeModules: # enable auto-packing of external modules
+      forceExclude:
+        - aws-sdk
+  connectionTableName: ${env:CONNECTION_TABLE_NAME, "ConnectionIds_${env:SERVICE_NAME}"}
+  stage: ${env:STAGE, opt:stage, "dev"}
+
+functions:
+  connect:
+    handler: src/handler.connect
+    timeout: 12
+    memorySize: 256
+    events:
+      - websocket:
+          route: $connect
+  disconnect:
+    handler: src/handler.disconnect
+    timeout: 12
+    memorySize: 256
+    events:
+      - websocket:
+          route: $disconnect
+  broadcast:
+    handler: src/handler.broadcast
+    timeout: 6
+    memorySize: 128
+    events:
+      - websocket:
+          route: $default
+
+resources:
+  Resources:
+    ConnectionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.connectionTableName}
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5

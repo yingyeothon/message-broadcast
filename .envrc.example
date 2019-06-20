@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Uncomment this if you have another ".envrc" at your parent directory.
+# [ ! -z "$(type -t source_up)" ] && source_up
+
+# Provide the stage if you don't want to supply it via sls cli.
+# export STAGE="dev"
+
+# The name of CloudFormation stack, so please use proper name for that.
+export SERVICE_NAME="nameofyourstack"
+
+# The name of DynamoDB table to manage a list of connection id.
+# If it is omitted, it should be "ConnectionIds_{SERVICE_NAME}"
+# but it can break the naming rule of DynamoDB, so be careful.
+# export CONNECTION_TABLE_NAME="OmitOrPutYourTableName"
+
+# If you want to use "Custom Domain Name" for this service,
+# please give that path mapped with deployed ApiGateway for proper endpoint of WebSocket API.
+# export API_PATH="broadcast"
+
