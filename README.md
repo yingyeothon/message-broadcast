@@ -41,7 +41,16 @@ We don't want to concern about this backend in management and costs manner. We w
 
 ### Why AWS
 
-When we prepare this backend, `AWS WebSocketAPI` is the only serverless solution thatsupports WebSocket properly.
+When we prepare this backend, `AWS WebSocketAPI` is the only serverless solution that supports WebSocket properly.
+
+### How many AWS components it uses
+
+It is built on many of AWS components.
+
+- It uses `API Gateway` and `Lambda` for WebSocket and broadcasting logic.
+- It uses `DynamoDB` to manage all of connectionIds.
+- It uses `CloudWatch` to write all console logs to it.
+- It uses `CloudFormation` and IAM to deploy this stack and manage proper roles.
 
 ### Message
 
@@ -129,6 +138,65 @@ connected (press CTRL+C to quit)
 > {"type":"act","payload":"left"}
 < {"type":"act","payload":"left","_now":1561016357649,"_me":true}
 >
+```
+
+## Troubleshooting
+
+### Error on NodeJS 10
+
+It is written by NodeJS 8 so please use NodeJS 8.1x runtime. Otherwise, for example, if you use NodeJS 10 runtime on your development environment you can see a stacktrace like below one while developing or deploying.
+
+```text
+npm ls -prod -json -depth=1 failed with code 1
+internal/modules/cjs/loader.js:584
+    throw err;
+    ^
+
+Error: Cannot find module '../lib/utils/unsupported.js'
+    at Function.Module._resolveFilename (internal/modules/cjs/loader.js:582:15)
+    at Function.Module._load (internal/modules/cjs/loader.js:508:25)
+```
+
+### Insufficient AWS privileges
+
+If you give the Administrator privileges to your AWS account, it will be never happened but if not so, you can see some error messages like below due to insufficient AWS privileges.
+
+```text
+not authorized to perform: cloudformation:DescribeStacks on resource: arn:aws:cloudformation:aws-region:account-id:stack/your-stack-name/*
+
+not authorized to perform: logs:DescribeLogGroups on resource: arn:aws:logs:aws-region:account-id:log-group::log-stream: (Service: AWSLogs; Status Code: 400; Error Code: AccessDeniedException; Request ID: guid).
+```
+
+Please check your AWS profile has proper privileges for these systems. This IAM role can help you. It is tough but smaller than Administrator.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DeployServerlessWithDynamoDB",
+      "Effect": "Allow",
+      "Action": [
+        "iam:*",
+        "apigateway:*",
+        "cloudwatch:*",
+        "logs:*",
+        "lambda:*",
+        "dynamodb:*",
+        "cloudformation:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+### UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS
+
+If you fail to deploy the system, CloudFormation performs a rollback to the last deployed system so that the system will function normally. That stage is `UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS`. You have to wait for this step to finish. After that, you can deploy new one normally.
+
+```text
+Stack:arn:aws:cloudformation:aws-region:account-id:stack/your-stack-name/event-id is in UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS state and can not be updated.
 ```
 
 ## Limitation
