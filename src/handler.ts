@@ -88,12 +88,13 @@ export const broadcast: APIGatewayProxyHandler = async event => {
   }
 
   // Step 3. Prepare ApiGatewayManagementApi client.
+  const apiEndpoint =
+    event.requestContext.domainName +
+    "/" +
+    (apiPath || event.requestContext.stage);
   const apimgmt = new AWS.ApiGatewayManagementApi({
     apiVersion: "2018-11-29",
-    endpoint:
-      event.requestContext.domainName +
-      "/" +
-      (apiPath || event.requestContext.path)
+    endpoint: apiEndpoint
   });
 
   // Step 4. Send a message to all of peers.
@@ -121,6 +122,7 @@ export const broadcast: APIGatewayProxyHandler = async event => {
       // Step 4-2. Delete a connection from DynamoDB if it is broken.
       console.error(
         `Error while post a data via a connection`,
+        apiEndpoint,
         connectionId,
         postError
       );
