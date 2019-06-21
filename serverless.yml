@@ -21,7 +21,7 @@ provider:
         - Fn::GetAtt: [ConnectionTable, Arn]
   environment:
     CONNECTION_TABLE_NAME: ${self:custom.connectionTableName}
-    API_PATH: ${env:API_PATH}
+    API_PATH: ${env:API_PATH, ""}
 
 plugins:
   - serverless-webpack
